@@ -12,8 +12,10 @@ function applyTheme() {
   else root.removeAttribute('data-theme');
   const icon = document.getElementById('theme-icon');
   const label = document.getElementById('theme-label');
+  const bnavIcon = document.getElementById('bnav-theme-icon');
   if (icon) icon.textContent = THEME_ICONS[themeMode];
   if (label) label.textContent = THEME_LABELS[themeMode];
+  if (bnavIcon) bnavIcon.textContent = THEME_ICONS[themeMode];
 }
 
 function cycleTheme() {
@@ -30,6 +32,30 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 });
 
 applyTheme();
+
+// ── SIDEBAR (mobile) ──
+function toggleSidebar() {
+  document.querySelector('aside').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.querySelector('aside').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ── BOTTOM NAV FILTER (mobile) ──
+function setFilterMobile(f, btn) {
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = f;
+  currentTagFilter = null;
+  // sync sidebar buttons too
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+  });
+  closeSidebar();
+  renderList();
+}
 
 let _stored = '[]';
 try { _stored = localStorage.getItem('done_tasks') || '[]'; } catch(e) {}
@@ -251,6 +277,7 @@ function setFilter(f, btn) {
   currentTagFilter = null;
   document.querySelectorAll('.filter-btn[data-filter]').forEach(x => x.classList.remove('active'));
   btn.classList.add('active');
+  closeSidebar();
   renderList();
 }
 
@@ -437,20 +464,5 @@ document.addEventListener('keydown', e => {
     toggleAddForm();
   }
 });
-
-// seed sample tasks on first load
-if (!tasks.length) {
-  const t = today();
-  const yd = new Date(new Date(t) - 86400000).toISOString().slice(0,10);
-  const tm = new Date(new Date(t).getTime() + 86400000).toISOString().slice(0,10);
-  tasks = [
-    { id: uid(), title: 'Review quarterly report', priority: 'high', due: t, note: 'Send to team by EOD', tags: ['work'], done: false, created: Date.now() - 5000 },
-    { id: uid(), title: 'Buy groceries', priority: 'med', due: t, note: null, tags: ['personal', 'errands'], done: false, created: Date.now() - 4000 },
-    { id: uid(), title: 'Fix login page bug', priority: 'high', due: yd, note: 'Reported by user #234', tags: ['work', 'dev'], done: false, created: Date.now() - 3000 },
-    { id: uid(), title: 'Schedule dentist appointment', priority: 'low', due: tm, note: null, tags: ['personal'], done: false, created: Date.now() - 2000 },
-    { id: uid(), title: 'Read design system docs', priority: 'none', due: null, note: null, tags: [], done: true, created: Date.now() - 1000, doneAt: Date.now() }
-  ];
-  save();
-}
 
 renderList();
