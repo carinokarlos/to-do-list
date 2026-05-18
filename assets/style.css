@@ -657,8 +657,7 @@
     gap: 8px;
     background: none;
     border: 1px solid var(--border);
-    color: var(--ink3);: 1px solid rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.7);
+    color: var(--ink3);
     font-family: 'DM Mono', monospace;
     font-size: 0.7rem;
     letter-spacing: 0.08em;
