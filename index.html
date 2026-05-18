@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Task Manager</title>
 <link rel="icon" type="image/x-icon" href="assets/cm.png">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 <script src="assets/main.js" defer></script>
 </head>
@@ -13,20 +13,32 @@
 
 <!-- HEADER -->
 <header>
-  <div class="logo">To Do List</div>
+  <div class="logo">Tasks</div>
   <div class="header-stats">
     <div><strong id="stat-total">0</strong>total</div>
     <div><strong id="stat-done">0</strong>completed</div>
     <div><strong id="stat-today">0</strong>due today</div>
   </div>
-  <div style="display:flex;align-items:center;gap:1rem;">
+  <div style="display:flex;align-items:center;gap:0.75rem;">
     <div id="storage-indicator" style="font-size:0.65rem;letter-spacing:0.08em;color:#666;"></div>
+    <button class="header-icon-btn" onclick="openGmailModal()" title="Email tasks">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 7l10 7 10-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="header-icon-btn" onclick="exportCSV()" title="Export CSV">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v13M7 11l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 19h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="header-icon-btn" onclick="exportPDF()" title="Export PDF">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="12" height="16" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M8 6h8M8 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16 18l4 4M16 22l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
     <button class="theme-toggle" id="theme-toggle" onclick="cycleTheme()">
       <span class="theme-icon" id="theme-icon">○</span>
       <span id="theme-label">auto</span>
     </button>
   </div>
 </header>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <!-- SIDEBAR -->
 <aside>
@@ -57,13 +69,13 @@
   <div class="sidebar-section">
     <div class="sidebar-label">Priority</div>
     <button class="filter-btn" data-filter="p-high" onclick="setFilter('p-high',this)">
-      ● High <span class="count" id="cnt-p-high">0</span>
+      <span class="p-dot high"></span> High <span class="count" id="cnt-p-high">0</span>
     </button>
     <button class="filter-btn" data-filter="p-med" onclick="setFilter('p-med',this)">
-      ● Medium <span class="count" id="cnt-p-med">0</span>
+      <span class="p-dot med"></span> Medium <span class="count" id="cnt-p-med">0</span>
     </button>
     <button class="filter-btn" data-filter="p-low" onclick="setFilter('p-low',this)">
-      ● Low <span class="count" id="cnt-p-low">0</span>
+      <span class="p-dot low"></span> Low <span class="count" id="cnt-p-low">0</span>
     </button>
   </div>
 
@@ -97,8 +109,11 @@
 
   <!-- TOOLBAR -->
   <div class="toolbar">
+    <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
     <div class="search-wrap">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#0a0a0a" stroke-width="1.5"/><path d="M11 11l3 3" stroke="#0a0a0a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       <input class="search-input" id="search-input" type="text" placeholder="Search tasks..." oninput="renderList()">
     </div>
     <select class="sort-select" id="sort-select" onchange="renderList()">
@@ -122,20 +137,42 @@
       <input class="form-input" id="new-title" type="text" placeholder="Task title…" onkeydown="if(event.key==='Enter')addTask()">
       <select class="form-input" id="new-priority">
         <option value="none">No priority</option>
-        <option value="high">● High</option>
-        <option value="med">● Medium</option>
-        <option value="low">● Low</option>
+        <option value="high">High</option>
+        <option value="med">Medium</option>
+        <option value="low">Low</option>
       </select>
     </div>
     <div class="form-row">
       <input class="form-input" id="new-due" type="date">
       <input class="form-input" id="new-note" type="text" placeholder="Note (optional)">
     </div>
+    <div class="form-row">
+      <select class="form-input" id="new-recur">
+        <option value="">No recurrence</option>
+        <option value="daily">Repeat daily</option>
+        <option value="weekly">Repeat weekly</option>
+        <option value="monthly">Repeat monthly</option>
+      </select>
+      <div style="flex:1;display:flex;align-items:center;gap:0.5rem;">
+        <input type="checkbox" id="new-reminder-enable" onchange="toggleReminderField('new')">
+        <label for="new-reminder-enable" style="font-size:0.8rem;color:var(--ink2);cursor:pointer;">Reminder</label>
+        <input class="form-input" id="new-reminder" type="datetime-local" style="display:none;flex:1;">
+      </div>
+    </div>
     <div class="form-row tag-input-row">
       <input class="form-input tag-input" id="new-tag-input" type="text" placeholder="Add tag and press Enter…" onkeydown="handleTagKey(event,'new-tags')">
       <div class="tag-preview inline-tags" id="new-tags-preview"></div>
     </div>
     <div id="new-tags" style="display:none"></div>
+    <!-- SUBTASKS -->
+    <div class="subtask-section">
+      <div class="subtask-label">Subtasks</div>
+      <div id="new-subtasks-list"></div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.4rem;">
+        <input class="form-input" id="new-subtask-input" type="text" placeholder="Add subtask…" onkeydown="if(event.key==='Enter')addSubtaskField('new')">
+        <button class="btn btn-ghost" onclick="addSubtaskField('new')">+ Add</button>
+      </div>
+    </div>
     <div class="form-row" style="justify-content:flex-end;margin-bottom:0">
       <button class="btn btn-ghost" onclick="closeAddForm()">Cancel</button>
       <button class="btn btn-primary" onclick="addTask()">Add task</button>
@@ -159,20 +196,42 @@
     <div class="form-row">
       <select class="form-input" id="edit-priority">
         <option value="none">No priority</option>
-        <option value="high">● High</option>
-        <option value="med">● Medium</option>
-        <option value="low">● Low</option>
+        <option value="high">High</option>
+        <option value="med">Medium</option>
+        <option value="low">Low</option>
       </select>
       <input class="form-input" id="edit-due" type="date">
     </div>
     <div class="form-row">
       <input class="form-input" id="edit-note" type="text" placeholder="Note">
     </div>
+    <div class="form-row">
+      <select class="form-input" id="edit-recur">
+        <option value="">No recurrence</option>
+        <option value="daily">Repeat daily</option>
+        <option value="weekly">Repeat weekly</option>
+        <option value="monthly">Repeat monthly</option>
+      </select>
+    </div>
+    <div class="form-row" style="align-items:center;gap:0.5rem;">
+      <input type="checkbox" id="edit-reminder-enable" onchange="toggleReminderField('edit')">
+      <label for="edit-reminder-enable" style="font-size:0.8rem;color:var(--ink2);cursor:pointer;">Set reminder</label>
+      <input class="form-input" id="edit-reminder" type="datetime-local" style="flex:1;">
+    </div>
     <div class="form-row tag-input-row">
       <input class="form-input tag-input" id="edit-tag-input" type="text" placeholder="Add tag and press Enter…" onkeydown="handleTagKey(event,'edit-tags')">
     </div>
     <div class="inline-tags" id="edit-tags-preview" style="margin-bottom:1rem"></div>
     <div id="edit-tags" style="display:none"></div>
+    <!-- SUBTASKS in EDIT -->
+    <div class="subtask-section">
+      <div class="subtask-label">Subtasks</div>
+      <div id="edit-subtasks-list"></div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.4rem;">
+        <input class="form-input" id="edit-subtask-input" type="text" placeholder="Add subtask…" onkeydown="if(event.key==='Enter')addSubtaskField('edit')">
+        <button class="btn btn-ghost" onclick="addSubtaskField('edit')">+ Add</button>
+      </div>
+    </div>
     <div class="form-row" style="justify-content:flex-end;margin-bottom:0">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveEdit()">Save changes</button>
@@ -180,7 +239,68 @@
   </div>
 </div>
 
+<!-- GMAIL MODAL -->
+<div class="modal-overlay" id="gmail-modal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header">
+      <span class="modal-title">Email task list</span>
+      <button class="icon-btn" onclick="closeGmailModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <input class="form-input" id="gmail-to" type="email" placeholder="To: email@example.com">
+    </div>
+    <div class="form-row">
+      <input class="form-input" id="gmail-subject" type="text" value="My Task List">
+    </div>
+    <div class="form-row">
+      <select class="form-input" id="gmail-filter">
+        <option value="all">All tasks</option>
+        <option value="today">Due today</option>
+        <option value="upcoming">Upcoming</option>
+        <option value="overdue">Overdue</option>
+        <option value="active">Active (not done)</option>
+      </select>
+    </div>
+    <div class="form-row" style="justify-content:flex-end;margin-bottom:0">
+      <button class="btn btn-ghost" onclick="closeGmailModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="sendGmail()">Open in Gmail</button>
+    </div>
+  </div>
+</div>
+
+<!-- REMINDER NOTIFICATION -->
+<div id="reminder-banner" style="display:none;position:fixed;top:1rem;right:1rem;z-index:300;background:var(--ink);color:var(--bg);padding:1rem 1.25rem;max-width:320px;font-size:0.8rem;line-height:1.5;border-radius:0;">
+  <div style="font-weight:600;margin-bottom:0.25rem;" id="reminder-title"></div>
+  <div id="reminder-body" style="opacity:0.75;"></div>
+  <button onclick="document.getElementById('reminder-banner').style.display='none'" style="margin-top:0.75rem;background:rgba(255,255,255,0.15);border:none;color:inherit;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.75rem;">Dismiss</button>
+</div>
+
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
+<!-- FAB -->
+<button class="fab" onclick="toggleAddForm()">+</button>
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bottom-nav-btn active" onclick="setFilterMobile('all',this)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="2" rx="1" fill="currentColor"/><rect x="3" y="11" width="12" height="2" rx="1" fill="currentColor"/><rect x="3" y="17" width="15" height="2" rx="1" fill="currentColor"/></svg>
+    All
+  </button>
+  <button class="bottom-nav-btn" onclick="setFilterMobile('today',this)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Today
+  </button>
+  <button class="bottom-nav-btn" onclick="setFilterMobile('overdue',this)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Overdue
+  </button>
+  <button class="bottom-nav-btn" onclick="setFilterMobile('done',this)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Done
+  </button>
+  <button class="bottom-nav-btn" id="bnav-theme-btn" onclick="cycleTheme()">
+    <span id="bnav-theme-icon" style="font-size:1.1rem;">○</span>
+    Theme
+  </button>
+</div>
 </body>
 </html>
