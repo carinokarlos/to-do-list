@@ -656,7 +656,8 @@
     align-items: center;
     gap: 8px;
     background: none;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid var(--border);
+    color: var(--ink3);: 1px solid rgba(255,255,255,0.2);
     color: rgba(255,255,255,0.7);
     font-family: 'DM Mono', monospace;
     font-size: 0.7rem;
@@ -668,7 +669,7 @@
     white-space: nowrap;
   }
 
-  .theme-toggle:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+  .theme-toggle:hover { border-color: var(--ink); color: var(--ink); }
 
   .theme-icon { font-size: 0.85rem; transition: transform 0.4s ease; }
   .theme-toggle:hover .theme-icon { transform: rotate(20deg); }
