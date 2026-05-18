@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Manager</title>
+<link rel="icon" type="image/x-icon" href="assets/cm.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/main.js" defer></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">To Do List</div>
+  <div class="header-stats">
+    <div><strong id="stat-total">0</strong>total</div>
+    <div><strong id="stat-done">0</strong>completed</div>
+    <div><strong id="stat-today">0</strong>due today</div>
+  </div>
+  <div id="storage-indicator" style="font-size:0.65rem;letter-spacing:0.08em;color:#666;"></div>
+</header>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Views</div>
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">
+      All tasks <span class="count" id="cnt-all">0</span>
+    </button>
+    <button class="filter-btn" data-filter="today" onclick="setFilter('today',this)">
+      Today <span class="count" id="cnt-today">0</span>
+    </button>
+    <button class="filter-btn" data-filter="upcoming" onclick="setFilter('upcoming',this)">
+      Upcoming <span class="count" id="cnt-upcoming">0</span>
+    </button>
+    <button class="filter-btn" data-filter="overdue" onclick="setFilter('overdue',this)">
+      Overdue <span class="count" id="cnt-overdue">0</span>
+    </button>
+    <button class="filter-btn" data-filter="done" onclick="setFilter('done',this)">
+      Completed <span class="count" id="cnt-done">0</span>
+    </button>
+    <button class="filter-btn" data-filter="noduedate" onclick="setFilter('noduedate',this)">
+      No due date <span class="count" id="cnt-noduedate">0</span>
+    </button>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Priority</div>
+    <button class="filter-btn" data-filter="p-high" onclick="setFilter('p-high',this)">
+      ● High <span class="count" id="cnt-p-high">0</span>
+    </button>
+    <button class="filter-btn" data-filter="p-med" onclick="setFilter('p-med',this)">
+      ● Medium <span class="count" id="cnt-p-med">0</span>
+    </button>
+    <button class="filter-btn" data-filter="p-low" onclick="setFilter('p-low',this)">
+      ● Low <span class="count" id="cnt-p-low">0</span>
+    </button>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Tags</div>
+    <div id="tag-filters"></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <!-- BULK BAR -->
+  <div class="bulk-bar" id="bulk-bar">
+    <span id="bulk-count">0 selected</span>
+    <button class="btn" onclick="bulkComplete()">Mark complete</button>
+    <button class="btn" onclick="bulkDelete()">Delete</button>
+    <button class="btn" onclick="clearSelection()">Cancel</button>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#0a0a0a" stroke-width="1.5"/><path d="M11 11l3 3" stroke="#0a0a0a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input class="search-input" id="search-input" type="text" placeholder="Search tasks..." oninput="renderList()">
+    </div>
+    <select class="sort-select" id="sort-select" onchange="renderList()">
+      <option value="created">Sort: Created</option>
+      <option value="due">Sort: Due date</option>
+      <option value="priority">Sort: Priority</option>
+      <option value="alpha">Sort: A → Z</option>
+    </select>
+    <button class="btn btn-ghost" onclick="toggleGroupBy()">
+      <span id="group-label">Group: off</span>
+    </button>
+    <button class="btn btn-ghost" onclick="toggleDone()">
+      <span id="show-done-label">Hide done</span>
+    </button>
+    <button class="btn btn-primary" onclick="toggleAddForm()">+ Add task</button>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="add-form" id="add-form">
+    <div class="form-row">
+      <input class="form-input" id="new-title" type="text" placeholder="Task title…" onkeydown="if(event.key==='Enter')addTask()">
+      <select class="form-input" id="new-priority">
+        <option value="none">No priority</option>
+        <option value="high">● High</option>
+        <option value="med">● Medium</option>
+        <option value="low">● Low</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <input class="form-input" id="new-due" type="date">
+      <input class="form-input" id="new-note" type="text" placeholder="Note (optional)">
+    </div>
+    <div class="form-row tag-input-row">
+      <input class="form-input tag-input" id="new-tag-input" type="text" placeholder="Add tag and press Enter…" onkeydown="handleTagKey(event,'new-tags')">
+      <div class="tag-preview inline-tags" id="new-tags-preview"></div>
+    </div>
+    <div id="new-tags" style="display:none"></div>
+    <div class="form-row" style="justify-content:flex-end;margin-bottom:0">
+      <button class="btn btn-ghost" onclick="closeAddForm()">Cancel</button>
+      <button class="btn btn-primary" onclick="addTask()">Add task</button>
+    </div>
+  </div>
+
+  <!-- TASK LIST -->
+  <div class="task-list-wrap" id="task-list"></div>
+</main>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit task</span>
+      <button class="icon-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <input class="form-input" id="edit-title" type="text" placeholder="Task title">
+    </div>
+    <div class="form-row">
+      <select class="form-input" id="edit-priority">
+        <option value="none">No priority</option>
+        <option value="high">● High</option>
+        <option value="med">● Medium</option>
+        <option value="low">● Low</option>
+      </select>
+      <input class="form-input" id="edit-due" type="date">
+    </div>
+    <div class="form-row">
+      <input class="form-input" id="edit-note" type="text" placeholder="Note">
+    </div>
+    <div class="form-row tag-input-row">
+      <input class="form-input tag-input" id="edit-tag-input" type="text" placeholder="Add tag and press Enter…" onkeydown="handleTagKey(event,'edit-tags')">
+    </div>
+    <div class="inline-tags" id="edit-tags-preview" style="margin-bottom:1rem"></div>
+    <div id="edit-tags" style="display:none"></div>
+    <div class="form-row" style="justify-content:flex-end;margin-bottom:0">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+</body>
+</html>
