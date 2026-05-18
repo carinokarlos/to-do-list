@@ -3,23 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Task Manager</title>
-<link rel="icon" type="image/x-icon" href="assets/cm.png">
+<title>DONE. — Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/styles.css">
 <script src="assets/main.js" defer></script>
 </head>
 <body>
 
 <!-- HEADER -->
 <header>
-  <div class="logo">To Do List</div>
+  <div class="logo">DONE.<span>task manager</span></div>
   <div class="header-stats">
     <div><strong id="stat-total">0</strong>total</div>
     <div><strong id="stat-done">0</strong>completed</div>
     <div><strong id="stat-today">0</strong>due today</div>
   </div>
-  <div id="storage-indicator" style="font-size:0.65rem;letter-spacing:0.08em;color:#666;"></div>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <div id="storage-indicator" style="font-size:0.65rem;letter-spacing:0.08em;color:#666;"></div>
+    <button class="theme-toggle" id="theme-toggle" onclick="cycleTheme()">
+      <span class="theme-icon" id="theme-icon">○</span>
+      <span id="theme-label">auto</span>
+    </button>
+  </div>
 </header>
 
 <!-- SIDEBAR -->
