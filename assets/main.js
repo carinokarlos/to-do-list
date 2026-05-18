@@ -438,19 +438,4 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// seed sample tasks on first load
-if (!tasks.length) {
-  const t = today();
-  const yd = new Date(new Date(t) - 86400000).toISOString().slice(0,10);
-  const tm = new Date(new Date(t).getTime() + 86400000).toISOString().slice(0,10);
-  tasks = [
-    { id: uid(), title: 'Review quarterly report', priority: 'high', due: t, note: 'Send to team by EOD', tags: ['work'], done: false, created: Date.now() - 5000 },
-    { id: uid(), title: 'Buy groceries', priority: 'med', due: t, note: null, tags: ['personal', 'errands'], done: false, created: Date.now() - 4000 },
-    { id: uid(), title: 'Fix login page bug', priority: 'high', due: yd, note: 'Reported by user #234', tags: ['work', 'dev'], done: false, created: Date.now() - 3000 },
-    { id: uid(), title: 'Schedule dentist appointment', priority: 'low', due: tm, note: null, tags: ['personal'], done: false, created: Date.now() - 2000 },
-    { id: uid(), title: 'Read design system docs', priority: 'none', due: null, note: null, tags: [], done: true, created: Date.now() - 1000, doneAt: Date.now() }
-  ];
-  save();
-}
-
 renderList();
